@@ -1,0 +1,16 @@
+{
+  "name": "slow-living-pms-preview",
+  "version": "1.0.0",
+  "description": "Slow Living PMS — protótipo de interface (futurista, by FERRO), servido como site estático no Railway.",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
