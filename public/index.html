@@ -3059,10 +3059,255 @@ function AppShell({ authUser, departmentsData, section, setSection, onLogout, ba
 }
 
 /* ---------------------------------------------------------------------- */
+/* Public site — the home page visitors land on, with a staff area behind  */
+/* a login (same shape as the Serão site: public pages + a locked /staff). */
+/* ---------------------------------------------------------------------- */
+
+const UNIT_BLURBS = {
+  "SAF-ANEXO": "Um anexo simples junto à casa mãe, em Safara — perfeito para uma escapadinha a dois.",
+  "SE-001": "Casa de pedra na Serra da Estrela, com lareira e vista para a vinha — a maior das nossas casas.",
+  "SE-002": "Um antigo palheiro recuperado, pequeno e aconchegante, para quem viaja mais leve.",
+};
+
+// Fixed-light card for the public site — unlike the global Card, it never flips to the
+// dark-mode tokens, since a marketing page keeps its own branded light look regardless
+// of the visitor's OS theme (the staff app behind the login still follows system theme).
+function LCard({ children, className = "", style = {} }) {
+  return <div className={`rounded-2xl border ${className}`} style={{ backgroundColor: "#FFFFFF", borderColor: "#E6D8C2", boxShadow: "0 1px 2px rgba(20,14,8,0.05), 0 10px 28px -16px rgba(20,14,8,0.14)", ...style }}>{children}</div>;
+}
+
+function PublicSite({ unitsData, reservationsData, concierge, config, todayStr, onEnterStaff }) {
+  const L = { bg: "#FBF7EF", band: "#F3EADA", ink: "#3E2F22", inkSoft: "#6B5B49", line: "#E6D8C2" };
+  const bookable = unitsData.filter((u) => u.type === "Alojamento Local");
+  const [calUnitId, setCalUnitId] = useState(bookable[0]?.id);
+  const [openFaq, setOpenFaq] = useState(null);
+  const [inquiry, setInquiry] = useState({ name: "", email: "", unitId: bookable[0]?.id || "", checkin: "", checkout: "", message: "" });
+  const [inquirySent, setInquirySent] = useState(false);
+  function submitInquiry(e) { e.preventDefault(); setInquirySent(true); }
+
+  const today = parseISO(todayStr);
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const firstWeekday = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
+  const calDays = [...Array(firstWeekday).fill(null), ...Array(daysInMonth).keys()].map((v, i) => (i < firstWeekday ? null : v + 1));
+  function dayStatus(d) {
+    if (!d) return null;
+    const iso = isoDate(new Date(today.getFullYear(), today.getMonth(), d));
+    return reservationsData.some((r) => r.unitId === calUnitId && r.status !== "cancelled" && r.status !== "no-show" && iso >= r.checkin && iso < r.checkout) ? "occupied" : "free";
+  }
+
+  const steps = [
+    { n: "1", title: "Escolhes as datas", text: "Vês a disponibilidade de cada unidade e escolhes os dias que te apetecem." },
+    { n: "2", title: "Pedes o orçamento", text: "Dizes-nos quantos são e o que precisam — respondemos ainda no mesmo dia." },
+    { n: "3", title: "Confirmamos a reserva", text: "Enviamos os detalhes finais e o essencial para a chegada." },
+    { n: "4", title: "As portas abrem", text: "Chegas, o tempo abranda — a equipa fica sempre por perto, sem nunca estar em cima." },
+  ];
+  const faqs = [
+    { q: "A que horas é o check-in e o check-out?", a: `Check-in a partir das ${config.horaCheckIn}:00 · check-out até às ${config.horaCheckOut}:00. Fora deste horário, fala connosco — tentamos sempre ser flexíveis.` },
+    { q: "Podemos levar o nosso animal de estimação?", a: "Sim, mediante consulta prévia — conta-nos no pedido de orçamento." },
+    { q: "Há Wi-Fi nas unidades?", a: "Sim — a rede e a palavra-passe ficam à tua espera na mesa de entrada." },
+    { q: "Qual é o horário de silêncio?", a: "Pedimos silêncio a partir das 23:00 — é região de aldeia, e de céu escuro." },
+  ];
+  const expIcons = [Sparkles, Bike, Coffee];
+  const expTones = [C.terracotta, C.olive, C.clay];
+
+  return (
+    <div style={{ backgroundColor: L.bg, color: L.ink }}>
+      <div className="sticky top-0 z-30 flex items-center justify-between px-6 lg:px-10 py-4" style={{ backgroundColor: "rgba(251,247,239,0.92)", backdropFilter: "blur(6px)", borderBottom: `1px solid ${L.line}` }}>
+        <div className="flex items-center gap-2.5">
+          <div className="rounded-full flex items-center justify-center shrink-0" style={{ width: 32, height: 32, backgroundColor: "var(--brand)" }}><TreePine size={14} color="#1B140D" /></div>
+          <span style={{ fontFamily: "var(--font-ui)", fontWeight: 700 }}>Slow Living<span style={{ color: "var(--brand)" }}>.</span></span>
+        </div>
+        <div className="hidden md:flex items-center gap-6 text-sm">
+          <a href="#unidades" className="hover:opacity-70">Unidades</a>
+          <a href="#experiencias" className="hover:opacity-70">Experiências</a>
+          <a href="#como-funciona" className="hover:opacity-70">Como funciona</a>
+          <a href="#perguntas" className="hover:opacity-70">Perguntas</a>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={onEnterStaff} className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium border" style={{ borderColor: L.line, color: L.ink }}><Lock size={12} /> Staff</button>
+          <a href="#pedir" className="px-4 py-2 rounded-full text-xs font-medium text-white" style={{ backgroundColor: "var(--brand)" }}>Pedir reserva</a>
+        </div>
+      </div>
+
+      <div className="px-6 lg:px-10 pt-16 pb-24 relative overflow-hidden">
+        <div className="max-w-3xl mx-auto text-center relative z-10">
+          <div className="text-xs mb-4" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.2em", color: "var(--brand)" }}>ALENTEJO · PORTUGAL</div>
+          <h1 style={{ fontFamily: "var(--font-serif)" }} className="text-4xl lg:text-6xl leading-[1.08] mb-5">As portas abrem,<br /><span style={{ fontStyle: "italic", color: "var(--brand)" }}>o tempo abranda.</span></h1>
+          <p className="text-base lg:text-lg max-w-xl mx-auto mb-8" style={{ color: L.inkSoft }}>Casas de campo no Alentejo e na Serra da Estrela, para quem quer dias mais lentos — vinha, silêncio e céu escuro.</p>
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <a href="#unidades" className="px-6 py-3 rounded-full text-sm font-medium text-white" style={{ backgroundColor: "var(--brand)" }}>Ver unidades</a>
+            <a href="#pedir" className="px-6 py-3 rounded-full text-sm font-medium border" style={{ borderColor: L.line, color: L.ink }}>Pedir orçamento</a>
+          </div>
+        </div>
+        <div className="hidden lg:block absolute" style={{ right: "9%", top: 56, width: 210, transform: "rotate(-4deg)" }}>
+          <LCard className="p-4">
+            <div className="text-xs mb-1" style={{ color: L.inkSoft }}>Casa da Vinha · Serra da Estrela</div>
+            <div className="text-lg mb-1" style={{ color: L.ink, fontFamily: "var(--font-serif)" }}>€115 / noite</div>
+            <div className="text-xs" style={{ color: C.olive }}>● Livre esta semana</div>
+          </LCard>
+        </div>
+        <div className="hidden lg:block absolute" style={{ left: "7%", bottom: -10, width: 190, transform: "rotate(3deg)" }}>
+          <LCard className="p-4">
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: L.inkSoft }}><MapPin size={12} />Safara, Alentejo</div>
+            <div className="text-sm mt-1.5" style={{ color: L.ink }}>Reserva Dark Sky Alqueva</div>
+            <div className="text-xs mt-0.5" style={{ color: C.clay }}>a 20 min do Anexo</div>
+          </LCard>
+        </div>
+      </div>
+
+      <div id="unidades" className="px-6 lg:px-10 py-16" style={{ backgroundColor: L.band }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-xs mb-2" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.16em", color: "var(--brand)" }}>UNIDADES</div>
+          <h2 style={{ fontFamily: "var(--font-serif)" }} className="text-3xl mb-8">Onde ficar</h2>
+          <div className="grid md:grid-cols-3 gap-5">
+            {bookable.map((u) => (
+              <LCard key={u.id} className="p-5">
+                <div className="text-xs mb-1" style={{ color: L.inkSoft }}>{u.place}</div>
+                <div className="text-xl mb-2" style={{ fontFamily: "var(--font-serif)" }}>{u.name}</div>
+                <p className="text-sm mb-4" style={{ color: L.inkSoft }}>{UNIT_BLURBS[u.id] || "Uma casa pensada para abrandar."}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">€{u.nightlyRate}<span className="text-xs font-normal" style={{ color: L.inkSoft }}> /noite · até {u.capacity}</span></span>
+                  <button onClick={() => { setCalUnitId(u.id); document.getElementById("disponibilidade")?.scrollIntoView({ behavior: "smooth" }); }} className="text-xs font-medium" style={{ color: "var(--brand)" }}>Ver disponibilidade →</button>
+                </div>
+              </LCard>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div id="disponibilidade" className="px-6 lg:px-10 py-16">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-xs mb-2" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.16em", color: "var(--brand)" }}>DISPONIBILIDADE</div>
+          <h2 style={{ fontFamily: "var(--font-serif)" }} className="text-2xl mb-5">Disponibilidade em {MONTHS_LONG[today.getMonth()]} — {bookable.find((u) => u.id === calUnitId)?.name}</h2>
+          <div className="flex gap-2 mb-5 flex-wrap">
+            {bookable.map((u) => <button key={u.id} onClick={() => setCalUnitId(u.id)} className="px-3 py-1.5 rounded-full text-xs font-medium border" style={calUnitId === u.id ? { backgroundColor: "var(--brand)", color: "#fff", borderColor: "var(--brand)" } : { borderColor: L.line, color: L.ink }}>{u.name}</button>)}
+          </div>
+          <LCard className="p-5">
+            <div className="grid grid-cols-7 gap-1.5 mb-2 text-center">{WEEKDAYS.map((w) => <div key={w} className="text-xs" style={{ color: L.inkSoft }}>{w}</div>)}</div>
+            <div className="grid grid-cols-7 gap-1.5">
+              {calDays.map((d, i) => { const status = dayStatus(d); return <div key={i} className="aspect-square rounded-lg flex items-center justify-center text-xs" style={d == null ? {} : status === "occupied" ? { backgroundColor: "rgba(180,85,47,0.16)", color: C.terracottaDark } : { backgroundColor: "rgba(113,118,79,0.12)", color: L.ink }}>{d}</div>; })}
+            </div>
+            <div className="flex items-center gap-4 mt-4 text-xs" style={{ color: L.inkSoft }}>
+              <span className="flex items-center gap-1.5"><span className="inline-block rounded-full" style={{ width: 9, height: 9, backgroundColor: "rgba(113,118,79,0.4)" }} /> Livre</span>
+              <span className="flex items-center gap-1.5"><span className="inline-block rounded-full" style={{ width: 9, height: 9, backgroundColor: "rgba(180,85,47,0.5)" }} /> Reservado</span>
+            </div>
+          </LCard>
+        </div>
+      </div>
+
+      <div id="experiencias" className="px-6 lg:px-10 py-16" style={{ backgroundColor: L.band }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-xs mb-2" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.16em", color: "var(--brand)" }}>EXPERIÊNCIAS</div>
+          <h2 style={{ fontFamily: "var(--font-serif)" }} className="text-3xl mb-8">Para além da estadia</h2>
+          <div className="grid md:grid-cols-3 gap-5">
+            {concierge.activities.map((a, i) => {
+              const Icon = expIcons[i % expIcons.length]; const tone = expTones[i % expTones.length];
+              return (
+                <LCard key={a.id} className="p-5">
+                  <div className="rounded-full flex items-center justify-center mb-3" style={{ width: 36, height: 36, backgroundColor: tone + "22" }}><Icon size={16} color={tone} /></div>
+                  <div className="text-sm font-semibold mb-1">{a.name}</div>
+                  <div className="text-xs mb-2" style={{ color: L.inkSoft }}>{a.time} · {a.spots}</div>
+                  <div className="text-xs font-medium" style={{ color: "var(--brand)" }}>€{a.price}</div>
+                </LCard>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div id="como-funciona" className="px-6 lg:px-10 py-16">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-xs mb-2" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.16em", color: "var(--brand)" }}>COMO FUNCIONA</div>
+          <h2 style={{ fontFamily: "var(--font-serif)" }} className="text-3xl mb-10">Do pedido à chegada</h2>
+          <div className="relative">
+            <div className="absolute left-[18px] top-2 bottom-2 w-px" style={{ backgroundColor: L.line }} />
+            <div className="space-y-8">
+              {steps.map((s) => (
+                <div key={s.n} className="flex gap-5">
+                  <div className="shrink-0 rounded-full flex items-center justify-center relative z-10" style={{ width: 36, height: 36, backgroundColor: L.bg, border: "2px solid var(--brand)", color: "var(--brand)", fontFamily: "var(--font-serif)" }}>{s.n}</div>
+                  <div className="pt-1.5"><div className="text-sm font-semibold mb-1">{s.title}</div><div className="text-sm" style={{ color: L.inkSoft }}>{s.text}</div></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="perguntas" className="px-6 lg:px-10 py-16" style={{ backgroundColor: L.band }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="text-xs mb-2" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.16em", color: "var(--brand)" }}>PERGUNTAS</div>
+          <h2 style={{ fontFamily: "var(--font-serif)" }} className="text-3xl mb-8">Perguntas frequentes</h2>
+          <div className="space-y-2">
+            {faqs.map((f, i) => (
+              <LCard key={i} className="overflow-hidden">
+                <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-center justify-between p-4 text-left">
+                  <span className="text-sm font-medium">{f.q}</span>
+                  <span style={{ color: L.inkSoft, transform: openFaq === i ? "rotate(45deg)" : "none", transition: "transform .15s" }}><Plus size={16} /></span>
+                </button>
+                {openFaq === i && <div className="px-4 pb-4 text-sm" style={{ color: L.inkSoft }}>{f.a}</div>}
+              </LCard>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div id="pedir" className="px-6 lg:px-10 py-16">
+        <div className="max-w-xl mx-auto">
+          <div className="text-xs mb-2" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.16em", color: "var(--brand)" }}>PEDIR RESERVA</div>
+          <h2 style={{ fontFamily: "var(--font-serif)" }} className="text-3xl mb-6">Conta-nos o que precisas</h2>
+          <LCard className="p-6">
+            {inquirySent ? (
+              <div className="text-center py-6">
+                <div className="mx-auto mb-3 rounded-full flex items-center justify-center" style={{ width: 44, height: 44, backgroundColor: "rgba(113,118,79,0.14)" }}><Check size={20} color={C.olive} /></div>
+                <div className="text-base font-semibold mb-1">Pedido enviado</div>
+                <p className="text-sm" style={{ color: L.inkSoft }}>Respondemos por email assim que possível — normalmente ainda hoje.</p>
+              </div>
+            ) : (
+              <form onSubmit={submitInquiry} className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <input required value={inquiry.name} onChange={(e) => setInquiry({ ...inquiry, name: e.target.value })} placeholder="Nome" className="px-3 py-2.5 rounded-lg border text-sm" style={{ borderColor: L.line, color: L.ink }} />
+                  <input required type="email" value={inquiry.email} onChange={(e) => setInquiry({ ...inquiry, email: e.target.value })} placeholder="Email" className="px-3 py-2.5 rounded-lg border text-sm" style={{ borderColor: L.line, color: L.ink }} />
+                </div>
+                <select value={inquiry.unitId} onChange={(e) => setInquiry({ ...inquiry, unitId: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border text-sm" style={{ borderColor: L.line, color: L.ink, backgroundColor: "#fff" }}>
+                  {bookable.map((u) => <option key={u.id} value={u.id}>{u.name} · {u.place}</option>)}
+                </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <input type="date" value={inquiry.checkin} onChange={(e) => setInquiry({ ...inquiry, checkin: e.target.value })} className="px-3 py-2.5 rounded-lg border text-sm" style={{ borderColor: L.line, color: L.ink }} />
+                  <input type="date" value={inquiry.checkout} onChange={(e) => setInquiry({ ...inquiry, checkout: e.target.value })} className="px-3 py-2.5 rounded-lg border text-sm" style={{ borderColor: L.line, color: L.ink }} />
+                </div>
+                <textarea value={inquiry.message} onChange={(e) => setInquiry({ ...inquiry, message: e.target.value })} placeholder="Quantos são, horários, alguma coisa que devamos saber…" rows={3} className="w-full px-3 py-2.5 rounded-lg border text-sm" style={{ borderColor: L.line, color: L.ink }} />
+                <button type="submit" className="w-full py-3 rounded-full text-sm font-medium text-white" style={{ backgroundColor: "var(--brand)" }}>Enviar pedido</button>
+              </form>
+            )}
+          </LCard>
+        </div>
+      </div>
+
+      <div className="sl-hero px-6 lg:px-10 py-12">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="rounded-full flex items-center justify-center" style={{ width: 26, height: 26, backgroundColor: "var(--brand)" }}><TreePine size={12} color="#1B140D" /></div>
+              <span style={{ fontFamily: "var(--font-ui)", fontWeight: 700 }}>Slow Living.</span>
+            </div>
+            <p className="text-xs" style={{ color: "rgba(243,234,218,0.6)" }}>{config.nomeComercial} · {config.contactoEmail}</p>
+          </div>
+          <button onClick={onEnterStaff} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium border" style={{ borderColor: "rgba(243,234,218,0.2)", color: "rgba(243,234,218,0.85)" }}><Lock size={12} /> Área de Staff</button>
+        </div>
+        <div className="max-w-5xl mx-auto mt-8 pt-6 flex items-center justify-between text-xs" style={{ borderTop: "1px solid rgba(243,234,218,0.12)", color: "rgba(243,234,218,0.4)" }}>
+          <span>© {today.getFullYear()} Slow Living</span>
+          <span style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>by FERRO</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
 /* Login / landing                                                        */
 /* ---------------------------------------------------------------------- */
 
-function LoginScreen({ usersData, lang, onLogin, onStartKiosk }) {
+function LoginScreen({ usersData, lang, onLogin, onStartKiosk, onBack }) {
   const L = { bg: "#FBF7EF", panel: "#FFFFFF", ink: "#3E2F22", inkSoft: "#6B5B49", line: "#E6D8C2" };
   const [selectedUserId, setSelectedUserId] = useState(usersData[0]?.id || "");
   const [password, setPassword] = useState("");
@@ -3101,6 +3346,7 @@ function LoginScreen({ usersData, lang, onLogin, onStartKiosk }) {
             <div className="inline-flex items-center justify-center rounded-full mb-3" style={{ width: 40, height: 40, backgroundColor: "var(--brand)" }}><TreePine size={18} color="#F7EEE2" /></div>
             <h1 style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", color: L.ink }} className="text-xl">{t(lang, "login.title")}</h1>
           </div>
+          {onBack && <button onClick={onBack} className="text-xs mb-5 flex items-center gap-1" style={{ color: L.inkSoft }}><ChevronLeft size={13} /> Voltar ao site</button>}
           <h2 style={{ fontFamily: "var(--font-serif)", color: L.ink }} className="text-[1.7rem] mb-1">{t(lang, "login.enter")}</h2>
           <p className="text-sm mb-6" style={{ color: L.inkSoft }}>Escolhe o teu utilizador e escreve a palavra-passe.</p>
           <div className="space-y-3 mb-1">
@@ -3246,6 +3492,7 @@ function saveKey(key, data) { try { localStorage.setItem(key, JSON.stringify(dat
 
 function SlowLivingPMS() {
   const [authUser, setAuthUser] = useState(null);
+  const [publicView, setPublicView] = useState(true);
   const [guestMode, setGuestMode] = useState(false);
   const [guestUnitId, setGuestUnitId] = useState(null);
   const [kioskFlow, setKioskFlow] = useState(false);
@@ -3718,7 +3965,7 @@ function SlowLivingPMS() {
   const guestUnit = guestUnitId ? unitsData.find((u) => u.id === guestUnitId) : null;
   const guestReservation = guestUnitId ? currentReservationFor(guestUnitId, reservationsData, todayStr) : null;
 
-  function logout() { setAuthUser(null); setGuestMode(false); setGuestUnitId(null); setKioskFlow(false); setSection("painel"); }
+  function logout() { setAuthUser(null); setGuestMode(false); setGuestUnitId(null); setKioskFlow(false); setSection("painel"); setPublicView(true); }
   function submitExitAuth() {
     const u = usersData.find((usr) => usr.username === exitUser && usr.password === exitPass && isFrontOffice(usr, departmentsData));
     if (!u) { setExitError("Credenciais inválidas ou sem permissão de receção."); return; }
@@ -3778,7 +4025,10 @@ function SlowLivingPMS() {
   }
 
   if (!authUser && !guestMode && !kioskFlow) {
-    return <LoginScreen usersData={usersData} lang={config.defaultLanguage} onLogin={(u) => { setAuthUser(u); setSection("painel"); }} onStartKiosk={() => setKioskFlow(true)} />;
+    if (publicView) {
+      return <PublicSite unitsData={unitsData} reservationsData={reservationsData} concierge={concierge} config={config} todayStr={todayStr} onEnterStaff={() => setPublicView(false)} />;
+    }
+    return <LoginScreen usersData={usersData} lang={config.defaultLanguage} onLogin={(u) => { setAuthUser(u); setSection("painel"); }} onStartKiosk={() => setKioskFlow(true)} onBack={() => setPublicView(true)} />;
   }
 
   if (kioskFlow) {
