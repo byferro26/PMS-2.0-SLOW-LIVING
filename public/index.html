@@ -11,13 +11,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.3/babel.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#EFE6D8; --card:#FBF7EF; --ink:#3E2F22; --ink-soft:#6B5B49; --line:#E2D3BC;
     --brand:#B4552F; --brand-dark:#8F4224; --signal:#9C7A22; --signal-glow:rgba(156,122,34,0.25);
     --font-ui:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
     --font-mono:'IBM Plex Mono','SF Mono',Menlo,monospace;
+    --font-serif:'Fraunces','Iowan Old Style',Georgia,serif;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -44,6 +45,19 @@
   @keyframes sl-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.4; } }
   .sl-pulse{ animation: sl-pulse 2.4s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce){ .sl-pulse{ animation:none !important; } }
+  /* Hero panel — rich, palette-aware dark surface used on login and the dashboard greeting.
+     One warm gradient language reused in both places on purpose, so the entry screen and the
+     workspace read as the same product (not two visual systems stitched together). */
+  .sl-hero{
+    position:relative; overflow:hidden; isolation:isolate; color:#F3EADA;
+    background-image:
+      radial-gradient(circle, rgba(243,234,218,0.055) 1px, transparent 1px),
+      radial-gradient(640px 420px at 10% -10%, color-mix(in srgb, var(--signal) 34%, transparent), transparent 65%),
+      radial-gradient(580px 440px at 110% 120%, color-mix(in srgb, var(--brand) 40%, transparent), transparent 62%),
+      linear-gradient(175deg, #1C150D 0%, #241A10 55%, #160F09 100%);
+    background-size: 22px 22px, auto, auto, auto;
+  }
+  .sl-serif{ font-family: var(--font-serif); }
 </style>
 </head>
 <body>
@@ -116,7 +130,7 @@ const C = {
   olive: "#71764F", oliveDark: "#565A3B", clay: "#C97B3D", stone: "#A99A85",
   sidebar: "#120F0B", sidebarText: "#F3EADA", sidebarSoft: "#8F8470",
 };
-const serif = { fontFamily: "'Iowan Old Style', 'Georgia', serif" };
+const serif = { fontFamily: "var(--font-serif)" };
 
 const STORAGE_KEYS = {
   units: "sl-units-v10", reservations: "sl-reservations-v10", tasks: "sl-tasks-v10",
@@ -141,6 +155,10 @@ function fmtShort(iso) { const d = parseISO(iso); return `${d.getDate()} ${MONTH
 function dayIndexFromISO(iso, startDate) { return Math.round((parseISO(iso) - startDate) / 86400000); }
 function nightsBetween(ci, co) { return Math.round((parseISO(co) - parseISO(ci)) / 86400000); }
 function fmtWhen(ts) { const d = new Date(ts); return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`; }
+const WEEKDAYS_LONG = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+const MONTHS_LONG = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+function fmtLongDatePT(d) { return `${WEEKDAYS_LONG[d.getDay()]}, ${d.getDate()} de ${MONTHS_LONG[d.getMonth()]}`; }
+function hourGreeting() { const h = new Date().getHours(); return h < 12 ? "Bom dia" : h < 20 ? "Boa tarde" : "Boa noite"; }
 
 /* ---------------------------------------------------------------------- */
 /* Platform spine: roles, module catalog, departments                     */
@@ -556,7 +574,7 @@ function Pill({ children, color }) {
   return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: `${color}1A`, color }}>{children}</span>;
 }
 function Card({ children, className = "", style = {} }) {
-  return <div className={`rounded-xl border ${className}`} style={{ backgroundColor: C.card, borderColor: C.line, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)", ...style }}>{children}</div>;
+  return <div className={`rounded-2xl border ${className}`} style={{ backgroundColor: C.card, borderColor: C.line, boxShadow: "0 1px 2px rgba(20,14,8,0.05), 0 10px 28px -16px rgba(20,14,8,0.22), inset 0 1px 0 rgba(255,255,255,0.04)", ...style }}>{children}</div>;
 }
 function Field({ label, children }) { return <div><label className="text-xs" style={{ color: C.inkSoft }}>{label}</label><div className="mt-1">{children}</div></div>; }
 const inputStyle = { borderColor: C.line, color: C.ink };
@@ -1366,7 +1384,7 @@ function MyDashboard({ authUser, departmentsData, tasksData, maintenanceData, re
   );
 }
 
-function PainelSection({ unitsData, reservationsData, guestsData, maintenanceData, requestsData, ivaRate, config, todayStr, onOpenReservation, onGoTo }) {
+function PainelSection({ unitsData, reservationsData, guestsData, maintenanceData, requestsData, ivaRate, config, todayStr, onOpenReservation, onGoTo, authUser }) {
   const alUnits = unitsData.filter((u) => u.type === "Alojamento Local");
   const occupied = alUnits.filter((u) => currentReservationFor(u.id, reservationsData, todayStr)).length;
   const occupancy = alUnits.length ? Math.round((occupied / alUnits.length) * 100) : 0;
@@ -1391,8 +1409,14 @@ function PainelSection({ unitsData, reservationsData, guestsData, maintenanceDat
     { label: "Pedidos de hóspedes pendentes", value: pendingRequests, icon: Bell, tone: pendingRequests > 0 ? C.clay : C.olive, onClick: () => onGoTo("pedidos") },
   ];
 
+  const firstName = authUser?.name ? authUser.name.split(" ")[0] : "";
   return (
     <div>
+      <div className="sl-hero rounded-3xl p-7 lg:p-9 mb-6">
+        <div className="text-xs mb-2 capitalize" style={{ color: "var(--signal)", fontFamily: "var(--font-mono)", letterSpacing: "0.18em" }}>{fmtLongDatePT(parseISO(todayStr))}</div>
+        <h1 style={{ fontFamily: "var(--font-serif)" }} className="text-2xl lg:text-[1.9rem] mb-1.5">{hourGreeting()}{firstName ? `, ${firstName}` : ""}.</h1>
+        <p className="text-sm" style={{ color: "rgba(243,234,218,0.72)" }}>{occupancy}% de ocupação hoje · {arrivals.length} chegada{arrivals.length !== 1 ? "s" : ""} · {departures.length} saída{departures.length !== 1 ? "s" : ""}{pendingRequests > 0 ? ` · ${pendingRequests} pedido${pendingRequests !== 1 ? "s" : ""} por tratar` : ""}</p>
+      </div>
       <div className="grid grid-cols-5 gap-3 mb-6">{kpis.map((k) => <button key={k.label} onClick={k.onClick} className="text-left"><Card className="p-3.5 h-full"><k.icon size={16} color={k.tone} className="mb-1.5" /><div className="text-base font-semibold" style={{ color: C.ink }}>{k.value}</div><div className="text-xs" style={{ color: C.inkSoft }}>{k.label}</div></Card></button>)}</div>
       <div className="grid grid-cols-3 gap-5 mb-5">
         <Card className="p-4 col-span-2">
@@ -2991,12 +3015,13 @@ function AppShell({ authUser, departmentsData, section, setSection, onLogout, ba
       </button>
     );
   }
+  const activeLabel = groups.flatMap((g) => g.items).find((it) => it.key === section)?.label || "";
   return (
     <div className="flex" style={{ minHeight: "100vh" }}>
-      <div className="shrink-0 flex flex-col p-5 sl-grid" style={{ width: 240, backgroundColor: C.sidebar, position: "sticky", top: 0, height: "100vh", overflowY: "auto", borderRight: `1px solid ${C.line}` }}>
+      <div className="shrink-0 flex flex-col p-5 sl-grid" style={{ width: 240, backgroundImage: "linear-gradient(185deg, #17120B 0%, #1D150D 55%, #120F0B 100%)", position: "sticky", top: 0, height: "100vh", overflowY: "auto", borderRight: `1px solid ${C.line}` }}>
         <div className="flex items-center gap-2.5 mb-1">
-          <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: 34, height: 34, backgroundColor: "var(--brand)" }}><TreePine size={16} color="#F7EEE2" /></div>
-          <div><div style={{ fontFamily: "var(--font-ui)", fontWeight: 700, color: C.sidebarText }} className="text-sm leading-tight">Slow Living</div><div style={{ fontFamily: "var(--font-mono)", color: C.sidebarSoft, letterSpacing: "0.08em" }} className="text-xs">ALENTEJO</div></div>
+          <div className="rounded-full flex items-center justify-center shrink-0" style={{ width: 34, height: 34, backgroundColor: "var(--brand)" }}><TreePine size={16} color="#1B140D" /></div>
+          <div><div style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", color: C.sidebarText }} className="text-sm leading-tight">Slow Living</div><div style={{ fontFamily: "var(--font-mono)", color: C.sidebarSoft, letterSpacing: "0.08em" }} className="text-xs">ALENTEJO</div></div>
         </div>
         <div style={{ width: 24, height: 2, backgroundColor: "var(--signal)", opacity: 0.7, marginBottom: 16 }} />
         {searchSlot}
@@ -3020,7 +3045,15 @@ function AppShell({ authUser, departmentsData, section, setSection, onLogout, ba
           <div className="text-center mt-3" style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", color: C.sidebarSoft, opacity: 0.6 }}>by FERRO</div>
         </div>
       </div>
-      <div className="flex-1 min-w-0 p-8">{children}</div>
+      <div className="flex-1 min-w-0 p-8">
+        {section !== "painel" && (
+          <div className="flex items-end justify-between mb-6 pb-5" style={{ borderBottom: `1px solid ${C.line}` }}>
+            <h1 style={{ fontFamily: "var(--font-serif)", color: C.ink }} className="text-2xl">{activeLabel}</h1>
+            <div style={{ fontFamily: "var(--font-mono)", color: C.inkSoft, letterSpacing: "0.04em" }} className="text-xs capitalize">{fmtLongDatePT(new Date())}</div>
+          </div>
+        )}
+        {children}
+      </div>
     </div>
   );
 }
@@ -3030,45 +3063,79 @@ function AppShell({ authUser, departmentsData, section, setSection, onLogout, ba
 /* ---------------------------------------------------------------------- */
 
 function LoginScreen({ usersData, lang, onLogin, onStartKiosk }) {
-  const [username, setUsername] = useState(""); const [password, setPassword] = useState(""); const [error, setError] = useState("");
+  const L = { bg: "#FBF7EF", panel: "#FFFFFF", ink: "#3E2F22", inkSoft: "#6B5B49", line: "#E6D8C2" };
+  const [selectedUserId, setSelectedUserId] = useState(usersData[0]?.id || "");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [showDemo, setShowDemo] = useState(false);
   function submit() {
-    const u = usersData.find((u) => u.username === username && u.password === password);
-    if (u) onLogin(u); else setError("Utilizador ou password incorretos.");
+    const u = usersData.find((u) => u.id === selectedUserId);
+    if (u && u.password === password) onLogin(u);
+    else setError("Password incorreta.");
   }
+  const featurePills = [t(lang, "nav.calendario"), t(lang, "nav.caixa"), t(lang, "nav.housekeeping"), t(lang, "nav.concierge")];
+  const labelStyle = { fontSize: 12, color: L.inkSoft };
+  const fieldInput = { borderColor: L.line, color: L.ink, backgroundColor: "#fff" };
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 sl-grid" style={{ backgroundColor: C.bg }}>
-      <div className="w-full" style={{ maxWidth: 340 }}>
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center rounded-lg mb-3" style={{ width: 40, height: 40, backgroundColor: "var(--brand)" }}><TreePine size={18} color="#F7EEE2" /></div>
-          <h1 style={{ fontFamily: "var(--font-ui)", fontWeight: 700, color: C.ink }} className="text-xl">{t(lang, "login.title")}</h1>
-          <div style={{ width: 28, height: 2, backgroundColor: "var(--signal)", opacity: 0.8, margin: "8px auto" }} />
-          <p style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.08em", color: C.inkSoft }} className="text-xs mt-1">{t(lang, "login.subtitle")}</p>
+    <div className="min-h-screen w-full flex" style={{ backgroundColor: L.bg }}>
+      <div className="hidden md:flex md:w-[44%] lg:w-[40%] sl-hero flex-col justify-between p-10 lg:p-14 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="rounded-full flex items-center justify-center shrink-0" style={{ width: 36, height: 36, backgroundColor: "var(--brand)" }}><TreePine size={16} color="#1B140D" /></div>
+          <div style={{ fontFamily: "var(--font-ui)", fontWeight: 700 }} className="text-base">{t(lang, "login.title")}<span style={{ color: "var(--signal)" }}>.</span></div>
         </div>
-        <Card className="p-6 text-center mb-4">
-          <button onClick={onStartKiosk} className="w-full py-3 rounded-full text-sm font-medium text-white mb-2" style={{ backgroundColor: "var(--brand)" }}>{t(lang, "login.kiosk")}</button>
-          <p className="text-xs" style={{ color: C.inkSoft }}>Só a receção pode configurar o smartphone de um hóspede — requer credenciais.</p>
-        </Card>
-        <Card className="p-6">
-          <div className="flex items-center gap-1.5 mb-3"><Lock size={14} color={C.inkSoft} /><span className="text-sm font-semibold" style={{ color: C.ink }}>{t(lang, "login.teamAccess")}</span></div>
-          <div className="space-y-2.5 mb-3">
-            <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t(lang, "login.user")} className="w-full px-3 py-2 rounded-lg border text-sm" style={inputStyle} />
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }} placeholder={t(lang, "login.password")} className="w-full px-3 py-2 rounded-lg border text-sm" style={inputStyle} />
+        <div>
+          <div className="text-xs mb-3" style={{ color: "var(--signal)", fontFamily: "var(--font-mono)", letterSpacing: "0.2em" }}>{t(lang, "login.subtitle")}</div>
+          <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 500 }} className="text-4xl lg:text-[2.7rem] leading-[1.1] mb-4">
+            As portas abrem,<br /><span style={{ fontStyle: "italic", color: "var(--signal)" }}>o tempo abranda.</span>
+          </h1>
+          <p className="text-sm max-w-xs" style={{ color: "rgba(243,234,218,0.72)" }}>{t(lang, "app.tagline")}</p>
+          <div className="flex flex-wrap gap-2 mt-6">
+            {featurePills.map((f) => <span key={f} className="px-3 py-1.5 rounded-full text-xs" style={{ backgroundColor: "rgba(243,234,218,0.1)", border: "1px solid rgba(243,234,218,0.16)", color: "rgba(243,234,218,0.85)" }}>{f}</span>)}
           </div>
-          {error && <p className="text-xs mb-3" style={{ color: C.terracotta }}>{error}</p>}
-          <button onClick={submit} className="w-full py-2.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: C.oliveDark }}>{t(lang, "login.enter")}</button>
-          <div className="mt-4 p-3 rounded-lg text-xs" style={{ backgroundColor: C.bg, color: C.inkSoft }}>
-            Contas de demonstração (password <strong style={{ color: C.ink }}>1234</strong>)
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
-              <span>Admin: <strong style={{ color: C.ink }}>admin</strong></span>
-              <span>Receção: <strong style={{ color: C.ink }}>rececao</strong></span>
-              <span>Housekeeping: <strong style={{ color: C.ink }}>limpeza</strong></span>
-              <span>Manutenção: <strong style={{ color: C.ink }}>manutencao</strong></span>
-              <span>Restaurante: <strong style={{ color: C.ink }}>restaurante</strong></span>
-              <span>Cozinha: <strong style={{ color: C.ink }}>cozinha</strong></span>
+        </div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.14em", color: "rgba(243,234,218,0.4)" }}>by FERRO</div>
+      </div>
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-10">
+        <div className="w-full" style={{ maxWidth: 360 }}>
+          <div className="md:hidden text-center mb-7">
+            <div className="inline-flex items-center justify-center rounded-full mb-3" style={{ width: 40, height: 40, backgroundColor: "var(--brand)" }}><TreePine size={18} color="#F7EEE2" /></div>
+            <h1 style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", color: L.ink }} className="text-xl">{t(lang, "login.title")}</h1>
+          </div>
+          <h2 style={{ fontFamily: "var(--font-serif)", color: L.ink }} className="text-[1.7rem] mb-1">{t(lang, "login.enter")}</h2>
+          <p className="text-sm mb-6" style={{ color: L.inkSoft }}>Escolhe o teu utilizador e escreve a palavra-passe.</p>
+          <div className="space-y-3 mb-1">
+            <div>
+              <label style={labelStyle}>{t(lang, "login.user")}</label>
+              <select value={selectedUserId} onChange={(e) => { setSelectedUserId(e.target.value); setError(""); }} className="w-full mt-1 px-3 py-2.5 rounded-lg border text-sm" style={fieldInput}>
+                {usersData.map((u) => <option key={u.id} value={u.id}>{u.name} · {ROLE_LABELS[u.role]}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>{t(lang, "login.password")}</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }} placeholder="••••" className="w-full mt-1 px-3 py-2.5 rounded-lg border text-sm" style={fieldInput} />
             </div>
           </div>
-        </Card>
-        <div className="text-center mt-5" style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.12em", color: C.inkSoft, opacity: 0.6 }}>by FERRO</div>
+          {error && <p className="text-xs mt-2 mb-1" style={{ color: C.terracotta }}>{error}</p>}
+          <button onClick={submit} className="w-full py-2.5 rounded-full text-sm font-medium text-white mt-4" style={{ backgroundColor: "var(--brand)" }}>{t(lang, "login.enter")}</button>
+          <button onClick={() => setShowDemo((s) => !s)} className="text-xs mt-4" style={{ color: L.inkSoft, textDecoration: "underline" }}>{showDemo ? "Esconder contas de demonstração" : "Ver contas de demonstração"}</button>
+          {showDemo && (
+            <div className="mt-3 p-3 rounded-lg text-xs" style={{ backgroundColor: L.bg, color: L.inkSoft, border: `1px solid ${L.line}` }}>
+              Password <strong style={{ color: L.ink }}>1234</strong> para todas as contas de demonstração
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
+                <span>Admin: <strong style={{ color: L.ink }}>admin</strong></span>
+                <span>Receção: <strong style={{ color: L.ink }}>rececao</strong></span>
+                <span>Housekeeping: <strong style={{ color: L.ink }}>limpeza</strong></span>
+                <span>Manutenção: <strong style={{ color: L.ink }}>manutencao</strong></span>
+                <span>Restaurante: <strong style={{ color: L.ink }}>restaurante</strong></span>
+                <span>Cozinha: <strong style={{ color: L.ink }}>cozinha</strong></span>
+              </div>
+            </div>
+          )}
+          <div className="mt-6 pt-6" style={{ borderTop: `1px solid ${L.line}` }}>
+            <button onClick={onStartKiosk} className="w-full py-2.5 rounded-full text-sm font-medium border flex items-center justify-center gap-2" style={{ borderColor: L.line, color: L.ink }}><Smartphone size={14} />{t(lang, "login.kiosk")}</button>
+            <p className="text-xs text-center mt-2" style={{ color: L.inkSoft }}>Só a receção pode configurar o smartphone de um hóspede — requer credenciais.</p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -3679,7 +3746,7 @@ function SlowLivingPMS() {
     const canEditRestaurantLayout = authUser?.role === "admin" || (authUser?.role === "coordinator" && authUser?.departmentId === "dept-fnb");
     switch (section) {
       case "painel": return isFrontOffice(authUser, departmentsData)
-        ? <PainelSection unitsData={unitsData} reservationsData={reservationsData} guestsData={guestsData} maintenanceData={maintenanceData} requestsData={requestsData} ivaRate={config.ivaPadrao} config={config} todayStr={todayStr} onOpenReservation={(id) => { setSection("reservas"); setFocusReservationId(id); }} onGoTo={(sec) => setSection(sec)} />
+        ? <PainelSection unitsData={unitsData} reservationsData={reservationsData} guestsData={guestsData} maintenanceData={maintenanceData} requestsData={requestsData} ivaRate={config.ivaPadrao} config={config} todayStr={todayStr} onOpenReservation={(id) => { setSection("reservas"); setFocusReservationId(id); }} onGoTo={(sec) => setSection(sec)} authUser={authUser} />
         : <MyDashboard authUser={authUser} departmentsData={departmentsData} tasksData={tasksData} maintenanceData={maintenanceData} requestsData={requestsData} ordersData={ordersData} onGoTo={(sec) => setSection(sec)} />;
       case "calendario": return <BookingManager view="timeline" unitsData={unitsData} reservationsData={reservationsData} guestsData={guestsData} tasksData={tasksData} maintenanceData={maintenanceData} todayStr={todayStr} productsData={productsData} usersData={usersData} departmentsData={departmentsData} ivaRate={config.ivaPadrao} config={config} todayDate={todayDate} handlers={handlers} onSaveGuest={handleSaveGuest} focusReservationId={focusReservationId} onFocusHandled={() => setFocusReservationId(null)} />;
       case "reservas": return <BookingManager view="table" unitsData={unitsData} reservationsData={reservationsData} guestsData={guestsData} tasksData={tasksData} maintenanceData={maintenanceData} todayStr={todayStr} productsData={productsData} usersData={usersData} departmentsData={departmentsData} ivaRate={config.ivaPadrao} config={config} todayDate={todayDate} handlers={handlers} onSaveGuest={handleSaveGuest} focusReservationId={focusReservationId} onFocusHandled={() => setFocusReservationId(null)} />;
