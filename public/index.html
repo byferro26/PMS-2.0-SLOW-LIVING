@@ -11,27 +11,30 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.3/babel.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#EFE6D8; --card:#FBF7EF; --ink:#3E2F22; --ink-soft:#6B5B49; --line:#E2D3BC;
-    --brand:#B4552F; --brand-dark:#8F4224; --signal:#9C7A22; --signal-glow:rgba(156,122,34,0.25);
+    --bg:#F1EFE8; --card:#FFFFFF; --ink:#1C2118; --ink-soft:#5B6358; --line:#DEDDD2;
+    --brand:#2B3A26; --brand-dark:#19210F; --signal:#9C7A22; --signal-glow:rgba(156,122,34,0.25);
     --font-ui:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
     --font-mono:'IBM Plex Mono','SF Mono',Menlo,monospace;
-    --font-serif:'Fraunces','Iowan Old Style',Georgia,serif;
+    /* Named --font-serif for historical reasons, but repointed to a confident grotesque display
+       face — keeping the variable name avoids touching 40+ call sites across the file. */
+    --font-serif:'Bricolage Grotesque','Archivo',sans-serif;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --bg:#15110C; --card:#201A13; --ink:#F0E6D8; --ink-soft:#B8AB96; --line:#3A3022;
+      --bg:#10130D; --card:#171B12; --ink:#ECEEE4; --ink-soft:#9BA394; --line:#2A2F21;
       --signal:#D9A441; --signal-glow:rgba(217,164,65,0.28);
     }
   }
   :root[data-theme="dark"]{
-    --bg:#15110C; --card:#201A13; --ink:#F0E6D8; --ink-soft:#B8AB96; --line:#3A3022;
+    --bg:#10130D; --card:#171B12; --ink:#ECEEE4; --ink-soft:#9BA394; --line:#2A2F21;
     --signal:#D9A441; --signal-glow:rgba(217,164,65,0.28);
   }
-  /* Brand palettes — design tokens for the primary/branding surfaces (sidebar, primary actions). Functional status colors (occupied/free/urgent) stay fixed on purpose, for consistent meaning across palettes. */
-  :root[data-palette="terracotta"], :root:not([data-palette]) { --brand:#B4552F; --brand-dark:#8F4224; }
+  /* Brand palettes — design tokens for the primary/branding surfaces (sidebar, primary actions). Functional status colors (occupied/free/urgent) stay fixed on purpose, for consistent meaning across palettes. "cypress" is the new default (deep ink-green); the :not() rule only covers the instant before the app's effect sets data-palette on first paint. */
+  :root[data-palette="cypress"], :root:not([data-palette]) { --brand:#2B3A26; --brand-dark:#19210F; }
+  :root[data-palette="terracotta"] { --brand:#B4552F; --brand-dark:#8F4224; }
   :root[data-palette="sand"] { --brand:#C9A66B; --brand-dark:#A6864F; }
   :root[data-palette="forest"] { --brand:#4B6B4F; --brand-dark:#37503A; }
   :root[data-palette="slate"] { --brand:#5B6B7A; --brand-dark:#44515C; }
@@ -41,7 +44,7 @@
   body{ margin:0; background:var(--bg); font-family:var(--font-ui); }
   ::-webkit-scrollbar{ height:10px; width:10px; }
   ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:8px; }
-  .sl-grid{ background-image: radial-gradient(circle, rgba(243,234,218,0.05) 1px, transparent 1px); background-size: 22px 22px; }
+  .sl-grid{ background-image: radial-gradient(circle, rgba(236,238,228,0.05) 1px, transparent 1px); background-size: 22px 22px; }
   @keyframes sl-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.4; } }
   .sl-pulse{ animation: sl-pulse 2.4s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce){ .sl-pulse{ animation:none !important; } }
@@ -49,12 +52,12 @@
      One warm gradient language reused in both places on purpose, so the entry screen and the
      workspace read as the same product (not two visual systems stitched together). */
   .sl-hero{
-    position:relative; overflow:hidden; isolation:isolate; color:#F3EADA;
+    position:relative; overflow:hidden; isolation:isolate; color:#F1F2EA;
     background-image:
-      radial-gradient(circle, rgba(243,234,218,0.055) 1px, transparent 1px),
-      radial-gradient(640px 420px at 10% -10%, color-mix(in srgb, var(--signal) 34%, transparent), transparent 65%),
-      radial-gradient(580px 440px at 110% 120%, color-mix(in srgb, var(--brand) 40%, transparent), transparent 62%),
-      linear-gradient(175deg, #1C150D 0%, #241A10 55%, #160F09 100%);
+      radial-gradient(circle, rgba(241,242,234,0.05) 1px, transparent 1px),
+      radial-gradient(640px 420px at 10% -10%, color-mix(in srgb, var(--signal) 30%, transparent), transparent 65%),
+      radial-gradient(580px 440px at 110% 120%, color-mix(in srgb, var(--brand) 55%, transparent), transparent 62%),
+      linear-gradient(175deg, #10130D 0%, #151A10 55%, #0C0F09 100%);
     background-size: 22px 22px, auto, auto, auto;
   }
   .sl-serif{ font-family: var(--font-serif); }
@@ -128,7 +131,7 @@ const C = {
   bg: "var(--bg)", card: "var(--card)", ink: "var(--ink)", inkSoft: "var(--ink-soft)", line: "var(--line)",
   terracotta: "#B4552F", terracottaDark: "#8F4224", signal: "var(--signal)",
   olive: "#71764F", oliveDark: "#565A3B", clay: "#C97B3D", stone: "#A99A85",
-  sidebar: "#120F0B", sidebarText: "#F3EADA", sidebarSoft: "#8F8470",
+  sidebar: "#0D100A", sidebarText: "#F1F2EA", sidebarSoft: "#828A79",
 };
 const serif = { fontFamily: "var(--font-serif)" };
 
@@ -136,7 +139,7 @@ const STORAGE_KEYS = {
   units: "sl-units-v10", reservations: "sl-reservations-v10", tasks: "sl-tasks-v10",
   requests: "sl-requests-v10", guests: "sl-guests-v10", users: "sl-users-v10",
   maintenance: "sl-maintenance-v10", products: "sl-products-v10", cash: "sl-cash-v10",
-  log: "sl-log-v10", config: "sl-config-v10", orders: "sl-orders-v10", concierge: "sl-concierge-v10",
+  log: "sl-log-v10", config: "sl-config-v11", orders: "sl-orders-v10", concierge: "sl-concierge-v10",
   messages: "sl-messages-v10", teamMessages: "sl-teammsgs-v10", tables: "sl-tables-v10", tableBookings: "sl-tablebookings-v10",
   rooms: "sl-rooms-v10", markers: "sl-markers-v10", departments: "sl-departments-v10", stockMovements: "sl-stockmoves-v10",
 };
@@ -169,7 +172,7 @@ const ROLE_LABELS = { user: "Utilizador", coordinator: "Coordenador", admin: "Ad
 const ROLE_SCOPE_LABELS = { user: "Own", coordinator: "Team / Department", admin: "Organization", it: "System" };
 const DOC_TIPOS = ["Cartão de Cidadão", "Passaporte", "Outro"];
 const LANGUAGE_OPTIONS = { pt: "Português", en: "English", es: "Español" };
-const PALETTE_OPTIONS = { terracotta: "Terracotta", sand: "Sand", forest: "Forest", slate: "Slate", ocean: "Ocean" };
+const PALETTE_OPTIONS = { cypress: "Cypress", terracotta: "Terracotta", sand: "Sand", forest: "Forest", slate: "Slate", ocean: "Ocean" };
 const APPEARANCE_OPTIONS = { system: "Sistema", light: "Light", dark: "Dark" };
 
 // Centralized i18n dictionary. Not every screen in the app is translated yet (the deep operational
@@ -385,7 +388,7 @@ const defaultConfig = {
   taxaMunicipalAtiva: false, taxaMunicipalValor: 0, taxaMunicipalMaxNoites: 7,
   availableLanguages: ["pt", "en", "es"], defaultLanguage: "pt",
   timezone: "Europe/Lisbon", currency: "EUR", dateFormat: "DD/MM/AAAA", firstDayOfWeek: "seg",
-  availablePalettes: ["terracotta", "sand", "forest", "slate", "ocean"], defaultPalette: "terracotta", defaultAppearance: "system",
+  availablePalettes: ["cypress", "terracotta", "sand", "forest", "slate", "ocean"], defaultPalette: "cypress", defaultAppearance: "system",
   sessionTimeoutMinutes: 30, passwordMinLength: 4,
 };
 const defaultConcierge = {
@@ -574,7 +577,7 @@ function Pill({ children, color }) {
   return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: `${color}1A`, color }}>{children}</span>;
 }
 function Card({ children, className = "", style = {} }) {
-  return <div className={`rounded-2xl border ${className}`} style={{ backgroundColor: C.card, borderColor: C.line, boxShadow: "0 1px 2px rgba(20,14,8,0.05), 0 10px 28px -16px rgba(20,14,8,0.22), inset 0 1px 0 rgba(255,255,255,0.04)", ...style }}>{children}</div>;
+  return <div className={`rounded-2xl border ${className}`} style={{ backgroundColor: C.card, borderColor: C.line, boxShadow: "0 1px 2px rgba(10,14,8,0.05), 0 10px 28px -16px rgba(10,14,8,0.22), inset 0 1px 0 rgba(255,255,255,0.04)", ...style }}>{children}</div>;
 }
 function Field({ label, children }) { return <div><label className="text-xs" style={{ color: C.inkSoft }}>{label}</label><div className="mt-1">{children}</div></div>; }
 const inputStyle = { borderColor: C.line, color: C.ink };
@@ -586,7 +589,7 @@ function SimpleBarChart({ data, height = 200 }) {
       {data.map((d) => (
         <div key={d.mes} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
           <div style={{ fontSize: 11, color: C.inkSoft }}>€{d.receita}</div>
-          <div style={{ width: "100%", height: Math.round((d.receita / max) * (height - 50)), backgroundColor: C.terracotta, borderRadius: "6px 6px 0 0" }} />
+          <div style={{ width: "100%", height: Math.round((d.receita / max) * (height - 50)), backgroundColor: "var(--brand)", borderRadius: "6px 6px 0 0" }} />
           <div style={{ fontSize: 11, color: C.inkSoft }}>{d.mes}</div>
         </div>
       ))}
@@ -598,10 +601,13 @@ function SimpleBarChart({ data, height = 200 }) {
 /* Timeline                                                               */
 /* ---------------------------------------------------------------------- */
 
-const CELL_W = 40, ROW_H = 56, GROUP_H = 30, HEADER_H = 40, LABEL_W = 108;
+const CELL_W = 40, ROW_H = 60, GROUP_H = 34, HEADER_H = 44, LABEL_W = 136;
 
 function LegendDot({ color, label }) {
-  return <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />{label}</span>;
+  return <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />{label}</span>;
+}
+function initials(name) {
+  return (name || "—").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 
 function Timeline({ unitsData, reservationsData, guestsData, tasksData, todayDate, todayStr, onOpenReservation, onOpenUnit, onCreateAt }) {
@@ -656,35 +662,41 @@ function Timeline({ unitsData, reservationsData, guestsData, tasksData, todayDat
   const STATUS_FILTERS = ["all", "Livre", "Ocupado", "Em limpeza", "Aguarda limpeza", "Arrendado"];
   const totalWidth = LABEL_W + rangeDays * CELL_W;
 
+  let unitRowIndex = -1;
   return (
     <div>
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <div className="flex items-center gap-4 flex-wrap text-xs" style={{ color: C.inkSoft }}>
-          <LegendDot color={C.stone} label="Confirmada" /><LegendDot color={C.terracotta} label="Check-in feito" />
-          <LegendDot color={C.olive} label="Check-out feito" /><LegendDot color={C.inkSoft} label="Arrendamento" />
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-3 px-4 py-3 rounded-2xl" style={{ backgroundColor: C.card, border: `1px solid ${C.line}` }}>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative">
+            <span className="absolute" style={{ left: 10, top: "50%", transform: "translateY(-50%)" }}><SearchIcon size={13} color={C.inkSoft} /></span>
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Pesquisar unidade ou hóspede…" className="pl-7 pr-3 py-1.5 rounded-full border text-xs" style={{ ...inputStyle, minWidth: 220, backgroundColor: C.bg }} />
+          </div>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-2.5 py-1.5 rounded-full border text-xs" style={{ ...inputStyle, backgroundColor: C.bg }}>
+            {STATUS_FILTERS.map((s) => <option key={s} value={s}>{s === "all" ? "Todos os estados" : s}</option>)}
+          </select>
         </div>
-        <button onClick={jumpToToday} className="text-xs font-medium px-3 py-1.5 rounded-full border" style={{ borderColor: C.line, color: C.inkSoft }}>Hoje</button>
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap text-xs" style={{ color: C.inkSoft }}>
+            <LegendDot color={C.stone} label="Confirmada" /><LegendDot color={C.terracotta} label="Check-in" />
+            <LegendDot color={C.olive} label="Check-out" /><LegendDot color={C.inkSoft} label="Arrendamento" />
+          </div>
+          <button onClick={jumpToToday} className="text-xs font-semibold px-3.5 py-1.5 rounded-full text-white flex items-center gap-1.5" style={{ backgroundColor: "var(--brand)" }}><span className="w-1.5 h-1.5 rounded-full sl-pulse" style={{ backgroundColor: "var(--signal)" }} />Hoje</button>
+        </div>
       </div>
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Pesquisar unidade ou hóspede…" className="px-3 py-1.5 rounded-full border text-xs" style={{ ...inputStyle, minWidth: 220 }} />
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-2.5 py-1.5 rounded-full border text-xs" style={{ ...inputStyle, backgroundColor: "#fff" }}>
-          {STATUS_FILTERS.map((s) => <option key={s} value={s}>{s === "all" ? "Todos os estados" : s}</option>)}
-        </select>
-      </div>
-      <p className="text-xs mb-3" style={{ color: C.inkSoft }}>Toque numa reserva para ver detalhes, ou num espaço livre para criar uma nova. Desliza para ver mais datas.</p>
-      <div className="rounded-xl border shadow-sm overflow-x-auto" style={{ borderColor: C.line }} ref={scrollRef} onScroll={handleScroll}>
+      <p className="text-xs mb-3 px-1" style={{ color: C.inkSoft }}>Toque numa reserva para ver detalhes, ou num espaço livre para criar uma nova. Desliza para ver mais datas.</p>
+      <div className="rounded-2xl border overflow-x-auto" style={{ borderColor: C.line, boxShadow: "0 1px 2px rgba(20,24,16,0.04), 0 16px 32px -20px rgba(20,24,16,0.2)" }} ref={scrollRef} onScroll={handleScroll}>
           <div style={{ width: totalWidth, position: "relative" }}>
-            <div className="flex" style={{ height: HEADER_H, position: "sticky", top: 0, zIndex: 6 }}>
-              <div style={{ width: LABEL_W, position: "sticky", left: 0, zIndex: 7, backgroundColor: C.card, borderColor: C.line, color: C.inkSoft }} className="shrink-0 border-b border-r flex items-center px-3 text-xs font-semibold">Unidade</div>
+            <div className="flex" style={{ height: HEADER_H, position: "sticky", top: 0, zIndex: 6, boxShadow: `inset 0 -1px 0 ${C.line}` }}>
+              <div style={{ width: LABEL_W, position: "sticky", left: 0, zIndex: 7, backgroundColor: C.card, color: C.inkSoft, boxShadow: `inset -1px 0 0 ${C.line}` }} className="shrink-0 flex items-center px-4 text-xs font-semibold uppercase tracking-wide">Unidade</div>
               <div className="flex" style={{ backgroundColor: C.card }}>
                 {dates.map((d, i) => (
-                  <div key={i} style={{ width: CELL_W, height: HEADER_H, backgroundColor: isWeekend(d) ? C.stone + "1A" : "transparent", borderColor: C.line }} className="shrink-0 flex flex-col items-center justify-center text-xs border-b">
+                  <div key={i} style={{ width: CELL_W, height: HEADER_H, backgroundColor: isWeekend(d) ? C.bg : "transparent" }} className="shrink-0 flex flex-col items-center justify-center text-xs">
                     {i === todayIdx ? (
-                      <span className="px-1.5 py-0.5 rounded-full text-xs font-semibold" style={{ backgroundColor: C.terracotta, color: "#fff" }}>{d.getDate()}</span>
+                      <span className="px-1.5 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: "var(--brand)", color: "#fff" }}>{d.getDate()}</span>
                     ) : (
                       <>
-                        <span style={{ color: C.inkSoft }}>{WEEKDAYS[d.getDay()]}</span>
-                        <span style={{ color: C.inkSoft }}>{d.getDate()}</span>
+                        <span style={{ color: C.inkSoft, fontSize: 10, letterSpacing: "0.03em" }}>{WEEKDAYS[d.getDay()]}</span>
+                        <span style={{ color: C.ink, fontWeight: 500 }}>{d.getDate()}</span>
                       </>
                     )}
                   </div>
@@ -695,39 +707,45 @@ function Timeline({ unitsData, reservationsData, guestsData, tasksData, todayDat
               if (it.type === "group") {
                 return (
                   <div key={"g" + i} className="flex" style={{ height: GROUP_H }}>
-                    <div style={{ width: LABEL_W, position: "sticky", left: 0, zIndex: 5, backgroundColor: C.sidebar, color: C.sidebarText, borderColor: "rgba(0,0,0,0.15)" }} className="shrink-0 flex items-center px-3 text-xs font-semibold tracking-wide border-r">{it.label}</div>
-                    <div style={{ flex: 1, backgroundColor: C.sidebar }} />
+                    <div style={{ width: LABEL_W, position: "sticky", left: 0, zIndex: 5, backgroundColor: `color-mix(in srgb, var(--brand) 12%, ${C.card})`, color: "var(--brand)" }} className="shrink-0 h-full flex items-center px-4 text-xs font-bold tracking-wide uppercase">{it.label}</div>
+                    <div style={{ flex: 1, height: "100%", backgroundColor: `color-mix(in srgb, var(--brand) 6%, ${C.bg})` }} />
                   </div>
                 );
               }
+              unitRowIndex++;
+              const rowBg = unitRowIndex % 2 === 1 ? `color-mix(in srgb, ${C.bg} 55%, ${C.card})` : C.card;
               const u = it.unit;
               const isLong = u.type !== "Alojamento Local";
               const hk = unitStatus(u, reservationsData, tasksData, todayStr);
               return (
-                <div key={u.id} className="flex relative border-b" style={{ height: ROW_H, borderColor: C.line }}>
-                  <div style={{ width: LABEL_W, position: "sticky", left: 0, zIndex: 4, backgroundColor: C.card, borderColor: C.line, color: C.ink }} className="shrink-0 border-r flex items-center gap-1.5 px-3 text-xs font-medium cursor-pointer" onClick={() => onOpenUnit(u.id)}>
+                <div key={u.id} className="flex relative" style={{ height: ROW_H, backgroundColor: rowBg, boxShadow: `inset 0 -1px 0 ${C.line}` }}>
+                  <div style={{ width: LABEL_W, position: "sticky", left: 0, zIndex: 4, backgroundColor: rowBg, color: C.ink, boxShadow: `inset -1px 0 0 ${C.line}` }} className="shrink-0 flex items-center gap-2 px-4 text-xs font-medium cursor-pointer" onClick={() => onOpenUnit(u.id)}>
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: hk.color }} title={hk.label} />
-                    <span className="truncate underline decoration-dotted">{u.name}</span>
+                    <span className="truncate">{u.name}</span>
                   </div>
                   <div className="absolute inset-0 flex cursor-pointer" style={{ left: LABEL_W }}
                     onClick={isLong ? undefined : (e) => { const rect = e.currentTarget.getBoundingClientRect(); const idx = Math.floor((e.clientX - rect.left) / CELL_W); onCreateAt(u.id, addDays(rangeStart, idx)); }}>
-                    {dates.map((d, di) => <div key={di} style={{ width: CELL_W, backgroundColor: isWeekend(d) ? C.stone + "0F" : "transparent", borderColor: C.line + "80" }} className="h-full border-r shrink-0" />)}
+                    {dates.map((d, di) => (
+                      <div key={di} style={{ width: CELL_W, backgroundColor: isWeekend(d) ? `color-mix(in srgb, ${C.bg} 70%, transparent)` : "transparent", borderLeft: d.getDay() === 1 ? `1px solid ${C.line}` : "none" }} className="h-full shrink-0" />
+                    ))}
                   </div>
                   {isLong ? (
-                    <div className="absolute rounded-lg flex items-center px-3 text-xs text-white font-medium shadow-sm" style={{ top: 8, bottom: 8, left: LABEL_W + 8, zIndex: 3, backgroundColor: C.inkSoft }}>Arrendamento — {u.tenant}</div>
+                    <div className="absolute rounded-xl flex items-center px-3 text-xs text-white font-medium" style={{ top: 10, bottom: 10, left: LABEL_W + 8, zIndex: 3, backgroundColor: C.inkSoft }}>Arrendamento — {u.tenant}</div>
                   ) : (
                     reservationsData.filter((r) => r.unitId === u.id && r.status !== "cancelled").map((r) => {
                       const ci = dayIndexFromISO(r.checkin, rangeStart), co = dayIndexFromISO(r.checkout, rangeStart);
                       const clampedCi = Math.max(0, ci), clampedCo = Math.min(rangeDays, co);
                       if (clampedCo <= clampedCi) return null;
                       const left = LABEL_W + clampedCi * CELL_W, width = Math.max(clampedCo - clampedCi, 1) * CELL_W;
-                      const barW = Math.max(width - 4, 22);
+                      const barW = Math.max(width - 6, 26);
                       const meta = reservationStatusMeta(r.status);
+                      const guest = guestName(r.ownerGuestId, guestsData);
                       return (
                         <button key={r.id} onClick={(e) => { e.stopPropagation(); onOpenReservation(r); }}
-                          className="absolute rounded-lg px-2 flex items-center text-xs font-medium text-white overflow-hidden text-left shadow-sm"
-                          style={{ top: 8, bottom: 8, left, width: barW, zIndex: 3, backgroundColor: meta.color }}>
-                          <span className="truncate">{barW > 90 ? `${r.numero} · ` : ""}{reservationGuestSummary(r, guestsData)}</span>
+                          className="absolute rounded-xl flex items-center gap-1.5 pl-1 pr-2.5 text-xs font-medium text-white overflow-hidden text-left"
+                          style={{ top: 9, bottom: 9, left, width: barW, zIndex: 3, backgroundColor: meta.color, boxShadow: "0 1px 2px rgba(20,24,16,0.14), 0 4px 10px -6px rgba(20,24,16,0.4)" }}>
+                          {barW > 44 && <span className="shrink-0 rounded-full flex items-center justify-center font-bold" style={{ width: 19, height: 19, fontSize: 9, backgroundColor: "rgba(255,255,255,0.28)" }}>{initials(guest)}</span>}
+                          <span className="truncate">{barW > 100 ? `${r.numero} · ` : ""}{reservationGuestSummary(r, guestsData)}</span>
                         </button>
                       );
                     })
@@ -735,7 +753,8 @@ function Timeline({ unitsData, reservationsData, guestsData, tasksData, todayDat
                 </div>
               );
             })}
-            <div className="absolute pointer-events-none sl-pulse" style={{ top: HEADER_H, left: LABEL_W + todayIdx * CELL_W + CELL_W / 2, width: 2, bottom: 0, backgroundColor: "var(--signal)", opacity: 0.7, boxShadow: "0 0 8px var(--signal-glow)" }} />
+            <div className="absolute pointer-events-none" style={{ top: HEADER_H, left: LABEL_W + todayIdx * CELL_W, width: CELL_W, bottom: 0, backgroundColor: `color-mix(in srgb, var(--signal) 7%, transparent)` }} />
+            <div className="absolute pointer-events-none sl-pulse" style={{ top: HEADER_H, left: LABEL_W + todayIdx * CELL_W + CELL_W / 2, width: 2, bottom: 0, backgroundColor: "var(--signal)", opacity: 0.8, boxShadow: "0 0 8px var(--signal-glow)" }} />
           </div>
       </div>
     </div>
@@ -3017,10 +3036,10 @@ function AppShell({ authUser, departmentsData, section, setSection, onLogout, ba
   const activeLabel = groups.flatMap((g) => g.items).find((it) => it.key === section)?.label || "";
   return (
     <div className="flex" style={{ minHeight: "100vh" }}>
-      <div className="shrink-0 flex flex-col p-5 sl-grid" style={{ width: 240, backgroundImage: "linear-gradient(185deg, #17120B 0%, #1D150D 55%, #120F0B 100%)", position: "sticky", top: 0, height: "100vh", overflowY: "auto", borderRight: `1px solid ${C.line}` }}>
+      <div className="shrink-0 flex flex-col p-5 sl-grid" style={{ width: 240, backgroundImage: "linear-gradient(185deg, #121710 0%, #161C12 55%, #0D100A 100%)", position: "sticky", top: 0, height: "100vh", overflowY: "auto", borderRight: `1px solid ${C.line}` }}>
         <div className="flex items-center gap-2.5 mb-1">
           <div className="rounded-full flex items-center justify-center shrink-0" style={{ width: 34, height: 34, backgroundColor: "var(--brand)" }}><TreePine size={16} color="#1B140D" /></div>
-          <div><div style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", color: C.sidebarText }} className="text-sm leading-tight">Slow Living</div><div style={{ fontFamily: "var(--font-mono)", color: C.sidebarSoft, letterSpacing: "0.08em" }} className="text-xs">ALENTEJO</div></div>
+          <div><div style={{ fontFamily: "var(--font-serif)", fontWeight: 600, color: C.sidebarText }} className="text-sm leading-tight">Slow Living</div><div style={{ fontFamily: "var(--font-mono)", color: C.sidebarSoft, letterSpacing: "0.08em" }} className="text-xs">ALENTEJO</div></div>
         </div>
         <div style={{ width: 24, height: 2, backgroundColor: "var(--signal)", opacity: 0.7, marginBottom: 16 }} />
         {searchSlot}
@@ -3085,11 +3104,11 @@ const EXP_IMAGES = [
 // dark-mode tokens, since a marketing page keeps its own branded light look regardless
 // of the visitor's OS theme (the staff app behind the login still follows system theme).
 function LCard({ children, className = "", style = {} }) {
-  return <div className={`rounded-2xl border ${className}`} style={{ backgroundColor: "#FFFFFF", borderColor: "#E6D8C2", boxShadow: "0 1px 2px rgba(20,14,8,0.05), 0 10px 28px -16px rgba(20,14,8,0.14)", ...style }}>{children}</div>;
+  return <div className={`rounded-2xl border ${className}`} style={{ backgroundColor: "#FFFFFF", borderColor: "#E4E3D9", boxShadow: "0 1px 2px rgba(10,14,8,0.04), 0 10px 28px -16px rgba(10,14,8,0.12)", ...style }}>{children}</div>;
 }
 
 function PublicSite({ unitsData, reservationsData, concierge, config, todayStr, onEnterStaff }) {
-  const L = { bg: "#FBF7EF", band: "#F3EADA", ink: "#3E2F22", inkSoft: "#6B5B49", line: "#E6D8C2" };
+  const L = { bg: "#F5F4EE", band: "#ECEAE0", ink: "#1C2118", inkSoft: "#5B6358", line: "#DEDDD2" };
   const bookable = unitsData.filter((u) => u.type === "Alojamento Local");
   const [calUnitId, setCalUnitId] = useState(bookable[0]?.id);
   const [openFaq, setOpenFaq] = useState(null);
@@ -3167,7 +3186,7 @@ function PublicSite({ unitsData, reservationsData, concierge, config, todayStr, 
         <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
           <div className="text-center lg:text-left">
             <div className="text-xs mb-4" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.2em", color: "var(--brand)" }}>ALENTEJO · PORTUGAL</div>
-            <h1 style={{ fontFamily: "var(--font-serif)" }} className="text-4xl lg:text-6xl leading-[1.08] mb-5">As portas abrem,<br /><span style={{ fontStyle: "italic", color: "var(--brand)" }}>o tempo abranda.</span></h1>
+            <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 700 }} className="text-4xl lg:text-6xl leading-[1.05] mb-5">As portas abrem, o tempo abranda.</h1>
             <p className="text-base lg:text-lg max-w-xl mx-auto lg:mx-0 mb-8" style={{ color: L.inkSoft }}>Casas de campo no Alentejo e na Serra da Estrela, para quem quer dias mais lentos — vinha, silêncio e céu escuro.</p>
             <div className="flex items-center justify-center lg:justify-start gap-3 flex-wrap">
               <a href="#reservar" className="px-6 py-3 rounded-full text-sm font-medium text-white" style={{ backgroundColor: "var(--brand)" }}>Ver unidades</a>
@@ -3175,7 +3194,7 @@ function PublicSite({ unitsData, reservationsData, concierge, config, todayStr, 
             </div>
           </div>
           <div className="relative mx-auto" style={{ maxWidth: 320, width: "100%" }}>
-            <div style={{ width: "100%", aspectRatio: "3/4", borderRadius: "999px 999px 20px 20px", padding: 12, backgroundColor: "#5B4433", boxShadow: "0 14px 0 rgba(42,33,25,0.12)" }}>
+            <div style={{ width: "100%", aspectRatio: "3/4", borderRadius: "999px 999px 20px 20px", padding: 12, backgroundColor: "#242A1E", boxShadow: "0 14px 0 rgba(20,24,16,0.12)" }}>
               <div style={{ width: "100%", height: "100%", borderRadius: "999px 999px 10px 10px", backgroundImage: `url(${HERO_IMAGE})`, backgroundSize: "cover", backgroundPosition: "center", border: "1.5px solid rgba(255,255,255,0.3)" }} />
             </div>
             <div className="hidden sm:block absolute" style={{ left: -24, bottom: 28, width: 180 }}>
@@ -3191,8 +3210,7 @@ function PublicSite({ unitsData, reservationsData, concierge, config, todayStr, 
 
       <div id="reservar" className="px-6 lg:px-10 py-16" style={{ backgroundColor: L.band }}>
         <div className="max-w-5xl mx-auto">
-          <div className="text-xs mb-2" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.16em", color: "var(--brand)" }}>RESERVAR</div>
-          <h2 style={{ fontFamily: "var(--font-serif)" }} className="text-3xl mb-3">Onde ficar</h2>
+          <h2 style={{ fontFamily: "var(--font-serif)", fontWeight: 700 }} className="text-3xl lg:text-4xl mb-3">Onde ficar</h2>
           <p className="text-sm mb-8 max-w-lg" style={{ color: L.inkSoft }}>Escolhe a unidade, marca os dias no calendário e envia o pedido — respondemos ainda no mesmo dia.</p>
           <div className="grid md:grid-cols-3 gap-5 mb-10">
             {bookable.map((u) => (
@@ -3267,8 +3285,7 @@ function PublicSite({ unitsData, reservationsData, concierge, config, todayStr, 
 
       <div id="experiencias" className="px-6 lg:px-10 py-16">
         <div className="max-w-5xl mx-auto">
-          <div className="text-xs mb-2" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.16em", color: "var(--brand)" }}>EXPERIÊNCIAS</div>
-          <h2 style={{ fontFamily: "var(--font-serif)" }} className="text-3xl mb-8">Para além da estadia</h2>
+          <h2 style={{ fontFamily: "var(--font-serif)", fontWeight: 700 }} className="text-3xl lg:text-4xl mb-8">Para além da estadia</h2>
           <div className="grid md:grid-cols-3 gap-5">
             {concierge.activities.map((a, i) => {
               const Icon = expIcons[i % expIcons.length]; const tone = expTones[i % expTones.length];
@@ -3290,8 +3307,7 @@ function PublicSite({ unitsData, reservationsData, concierge, config, todayStr, 
 
       <div id="como-funciona" className="px-6 lg:px-10 py-16" style={{ backgroundColor: L.band }}>
         <div className="max-w-3xl mx-auto">
-          <div className="text-xs mb-2" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.16em", color: "var(--brand)" }}>COMO FUNCIONA</div>
-          <h2 style={{ fontFamily: "var(--font-serif)" }} className="text-3xl mb-10">Do pedido à chegada</h2>
+          <h2 style={{ fontFamily: "var(--font-serif)", fontWeight: 700 }} className="text-3xl lg:text-4xl mb-10">Do pedido à chegada</h2>
           <div className="relative">
             <div className="absolute left-[18px] top-2 bottom-2 w-px" style={{ backgroundColor: L.line }} />
             <div className="space-y-8">
@@ -3308,8 +3324,7 @@ function PublicSite({ unitsData, reservationsData, concierge, config, todayStr, 
 
       <div id="perguntas" className="px-6 lg:px-10 py-16">
         <div className="max-w-2xl mx-auto">
-          <div className="text-xs mb-2" style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.16em", color: "var(--brand)" }}>PERGUNTAS</div>
-          <h2 style={{ fontFamily: "var(--font-serif)" }} className="text-3xl mb-8">Perguntas frequentes</h2>
+          <h2 style={{ fontFamily: "var(--font-serif)", fontWeight: 700 }} className="text-3xl lg:text-4xl mb-8">Perguntas frequentes</h2>
           <div className="space-y-2">
             {faqs.map((f, i) => (
               <LCard key={i} className="overflow-hidden">
@@ -3349,7 +3364,7 @@ function PublicSite({ unitsData, reservationsData, concierge, config, todayStr, 
 /* ---------------------------------------------------------------------- */
 
 function LoginScreen({ usersData, lang, onLogin, onStartKiosk, onBack }) {
-  const L = { bg: "#FBF7EF", panel: "#FFFFFF", ink: "#3E2F22", inkSoft: "#6B5B49", line: "#E6D8C2" };
+  const L = { bg: "#F5F4EE", panel: "#FFFFFF", ink: "#1C2118", inkSoft: "#5B6358", line: "#DEDDD2" };
   const [selectedUserId, setSelectedUserId] = useState(usersData[0]?.id || "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -3371,8 +3386,8 @@ function LoginScreen({ usersData, lang, onLogin, onStartKiosk, onBack }) {
         </div>
         <div>
           <div className="text-xs mb-3" style={{ color: "var(--signal)", fontFamily: "var(--font-mono)", letterSpacing: "0.2em" }}>{t(lang, "login.subtitle")}</div>
-          <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 500 }} className="text-4xl lg:text-[2.7rem] leading-[1.1] mb-4">
-            As portas abrem,<br /><span style={{ fontStyle: "italic", color: "var(--signal)" }}>o tempo abranda.</span>
+          <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 700 }} className="text-4xl lg:text-[2.7rem] leading-[1.05] mb-4">
+            As portas abrem, o tempo abranda.
           </h1>
           <p className="text-sm max-w-xs" style={{ color: "rgba(243,234,218,0.72)" }}>{t(lang, "app.tagline")}</p>
           <div className="flex flex-wrap gap-2 mt-6">
@@ -3385,7 +3400,7 @@ function LoginScreen({ usersData, lang, onLogin, onStartKiosk, onBack }) {
         <div className="w-full" style={{ maxWidth: 360 }}>
           <div className="md:hidden text-center mb-7">
             <div className="inline-flex items-center justify-center rounded-full mb-3" style={{ width: 40, height: 40, backgroundColor: "var(--brand)" }}><TreePine size={18} color="#F7EEE2" /></div>
-            <h1 style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", color: L.ink }} className="text-xl">{t(lang, "login.title")}</h1>
+            <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, color: L.ink }} className="text-xl">{t(lang, "login.title")}</h1>
           </div>
           {onBack && <button onClick={onBack} className="text-xs mb-5 flex items-center gap-1" style={{ color: L.inkSoft }}><ChevronLeft size={13} /> Voltar ao site</button>}
           <h2 style={{ fontFamily: "var(--font-serif)", color: L.ink }} className="text-[1.7rem] mb-1">{t(lang, "login.enter")}</h2>
@@ -3565,7 +3580,7 @@ function SlowLivingPMS() {
   }, [authUser?.appearance, config.defaultAppearance]);
 
   useEffect(() => {
-    const palette = authUser?.palette || config.defaultPalette || "terracotta";
+    const palette = authUser?.palette || config.defaultPalette || "cypress";
     document.documentElement.setAttribute("data-palette", palette);
   }, [authUser?.palette, config.defaultPalette]);
 
